@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日常美學傾向：微光人格測驗</title>
+    <style>
+        /* 視覺設計：採用低飽和度、優雅現代的灰粉與銀灰調性 */
+        :root {
+            --bg-color: #f4f4f5;
+            --card-bg: #ffffff;
+            --text-main: #3f3f46;
+            --text-muted: #71717a;
+            --accent-pink: #e4d5d3;
+            --accent-gray: #d4d4d8;
+            --border-color: #e4e4e7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            box-sizing: border-box;
+            transition: all 0.4s ease;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        /* 測驗進度條 */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: var(--border-color);
+            border-radius: 2px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-inner {
+            height: 100%;
+            width: 0%;
+            background-color: var(--text-muted);
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 17px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        /* 按鈕樣式 */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .option-btn {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            padding: 16px 20px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 15px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            line-height: 1.4;
+        }
+
+        .option-btn:hover {
+            background-color: var(--bg-color);
+            border-color: var(--text-muted);
+        }
+
+        /* 結果頁面樣式 */
+        .result-view {
+            text-align: center;
+        }
+
+        .result-tag {
+            display: inline-block;
+            padding: 6px 16px;
+            font-size: 12px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .tag-gray { background-color: var(--accent-gray); color: #27272a; }
+        .tag-pink { background-color: var(--accent-pink); color: #524442; }
+
+        .result-title {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .result-desc {
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--text-muted);
+            text-align: justify;
+            margin-bottom: 35px;
+        }
+
+        .restart-btn {
+            background-color: var(--text-main);
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: opacity 0.2s;
+        }
+
+        .restart-btn:hover {
+            opacity: 0.9;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="quiz-container">
+        <!-- 歡迎與測驗主體 -->
+        <div id="quiz-view">
+            <h1 id="quiz-title">日常美學傾向</h1>
+            <div class="subtitle">微光人格特質測驗</div>
+            <div class="progress-bar"><div class="progress-inner" id="progress"></div></div>
+            <div class="question-text" id="question-text">載入中...</div>
+            <div class="options-container" id="options-container"></div>
+        </div>
+
+        <!-- 結果展示區 -->
+        <div id="result-view" class="hidden">
+            <div id="result-tag" class="result-tag">測驗結果</div>
+            <div id="result-title" class="result-title">解析中...</div>
+            <div id="result-desc" class="result-desc"></div>
+            <button class="restart-btn" onclick="restartQuiz()">重新測驗</button>
+        </div>
+    </div>
+
+    <script>
+        // 心理測驗題目資料
+        const quizData = [
+            {
+                question: "Q1. 週末午後獨自走進一間選品店，最吸引你注意力的空間角落是？",
+                options: [
+                    { text: "A. 陳列著不銹鋼與幾何線條器皿的冷調金屬層架", score: 1 },
+                    { text: "B. 點著微弱木質香氛、擺放霧面陶器與亞麻織物的角落", score: 2 }
+                ]
+            },
+            {
+                question: "Q2. 準備在社群上發布一張日常照片，你傾向選擇哪種色調濾鏡？",
+                options: [
+                    { text: "A. 降低雜色、強調明暗對比的清透銀灰色系", score: 1 },
+                    { text: "B. 帶有一點溫暖厚度、低飽和度的溫柔輕粉或奶茶色調", score: 2 }
+                ]
+            },
+            {
+                question: "Q3. 當你需要高度專注來完成一項充滿挑戰的創意企劃時，你通常會？",
+                options: [
+                    { text: "A. 尋找安靜、沒有干擾的極簡工作空間，理清所有邏輯線索", score: 1 },
+                    { text: "B. 放一首舒服的音樂，在富有氛圍感的環境中順應直覺與情感創作", score: 2 }
+                ]
+            }
+        ];
+
+        // 結果定義
+        const results = {
+            typeA: {
+                title: "霧面銀灰 ｜ 理性極簡主義者",
+                tagClass: "tag-gray",
+                tagName: "SILVER GRAY",
+                desc: "你擁有像銀灰色一般的冷靜與透徹。在群體中，你往往是那個思緒清晰、注重細節與邏輯的人。比起繁複的裝飾，你更著迷於精準、結構感與物件本質的優雅。你擅長在混亂中梳理出秩序，這種內斂而高級的氣場，讓你散發著不可忽視的專業魅力。"
+            },
+            typeB: {
+                title: "低飽和輕粉 ｜ 溫潤情感敘事者",
+                tagClass: "tag-pink",
+                tagName: "LIGHT PINK",
+                desc: "你像是一抹低飽和度的輕粉色，溫柔、細細品味生活，且充滿同理心。你非常敏銳於周遭的人事物與情緒波動，擅長用柔軟的視角去敘述故事、捕捉生活中的微光。你追求和諧與氛圍感，不喜歡過度張揚，這種溫潤的直覺往往能創作出直擊人心的作品。"
+            }
+        };
+
+        let currentQuestionIndex = 0;
+        let totalScore = 0;
+
+        function initQuiz() {
+            currentQuestionIndex = 0;
+            totalScore = 0;
+            document.getElementById('quiz-view').classList.remove('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            // 更新進度條
+            const progressPercent = (currentQuestionIndex / quizData.length) * 100;
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+
+            // 置換題目文字
+            document.getElementById('question-text').innerText = currentQuestion.question;
+
+            // 清空並重新產生選項按鈕
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.innerText = option.text;
+                button.onclick = () => handleOptionClick(option.score);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function handleOptionClick(score) {
+            totalScore += score;
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-view').classList.add('hidden');
+            document.getElementById('result-view').classList.remove('hidden');
+
+            // 根據總分判定結果 (3題，總分 3~6 分)
+            // 3-4 分 -> 偏向 A (多選了1分的選項)
+            // 5-6 分 -> 偏向 B (多選了2分的選項)
+            const finalResult = totalScore <= 4 ? results.typeA : results.typeB;
+
+            const tagEl = document.getElementById('result-tag');
+            tagEl.className = `result-tag ${finalResult.tagClass}`;
+            tagEl.innerText = finalResult.tagName;
+
+            document.getElementById('result-title').innerText = finalResult.title;
+            document.getElementById('result-desc').innerText = finalResult.desc;
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+
+        // 啟動測驗
+        initQuiz();
+    </script>
+</body>
+</html>
